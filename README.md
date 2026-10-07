@@ -43,7 +43,7 @@ Copy `app/.env.example` to `app/.env` (git-ignored) and set one provider:
 ```ini
 LLM_PROVIDER=fake      # default: offline, free, deterministic
 LLM_PROVIDER=openai    # + OPENAI_API_KEY=...   (optional OPENAI_MODEL, default gpt-4o-mini)
-LLM_PROVIDER=groq      # + GROQ_API_KEY=...     (optional GROQ_MODEL, default llama-3.3-70b-versatile)
+LLM_PROVIDER=groq      # + GROQ_API_KEY=...     (optional GROQ_MODEL, default openai/gpt-oss-20b)
 ```
 
 `--llm fake|openai|groq` on `run_queue.py` overrides the file. Both real providers share ONE class

@@ -17,7 +17,7 @@ KINDS = ("status", "refund", "policy", "privacy", "injection", "incident_report"
 class LLMClient(Protocol):
     """What the graphs expect from an LLM backend."""
 
-    name: str                       # e.g. "fake", "openai:gpt-4o-mini", "groq:llama-3.3-70b-versatile"
+    name: str                       # e.g. "fake", "openai:gpt-4o-mini", "groq:openai/gpt-oss-20b"
     usage: dict[str, int]           # running totals: {"calls": n, "prompt_tokens": n, "completion_tokens": n}
 
     def classify(self, ticket: dict[str, Any]) -> dict[str, Any]:

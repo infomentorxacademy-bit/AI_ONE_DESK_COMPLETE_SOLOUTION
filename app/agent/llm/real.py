@@ -2,7 +2,7 @@
 
 Supports TWO providers through ONE implementation, because Groq exposes an OpenAI-compatible API:
     openai -> https://api.openai.com/v1         key: OPENAI_API_KEY   model: OPENAI_MODEL (default gpt-4o-mini)
-    groq   -> https://api.groq.com/openai/v1    key: GROQ_API_KEY     model: GROQ_MODEL   (default llama-3.3-70b-versatile)
+    groq   -> https://api.groq.com/openai/v1    key: GROQ_API_KEY     model: GROQ_MODEL   (default openai/gpt-oss-20b)
 (Groq here means Groq Cloud, groq.com - NOT xAI's "Grok".)
 
 SAFETY - the model never makes business decisions (ground rule G1):
@@ -32,7 +32,7 @@ log = logging.getLogger("opsdesk.llm")
 # provider -> (base_url, api-key env var, model env var, default model)
 PROVIDERS: dict[str, tuple[str | None, str, str, str]] = {
     "openai": (None, "OPENAI_API_KEY", "OPENAI_MODEL", "gpt-4o-mini"),           # None = SDK default URL
-    "groq": ("https://api.groq.com/openai/v1", "GROQ_API_KEY", "GROQ_MODEL", "llama-3.3-70b-versatile"),
+    "groq": ("https://api.groq.com/openai/v1", "GROQ_API_KEY", "GROQ_MODEL", "openai/gpt-oss-20b"),
 }
 
 _PHONE = re.compile(r"\+?\d[\d\- ]{8,}\d")
