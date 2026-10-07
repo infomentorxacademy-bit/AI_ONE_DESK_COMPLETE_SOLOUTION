@@ -28,9 +28,13 @@ export function LlmSelector({ config, onChanged }: Props) {
   return (
     <div className="llm">
       <label htmlFor="llm-select">LLM</label>
-      <select id="llm-select" disabled={busy} value={config.llm?.split(":")[0] ?? ""}
+      <select id="llm-select" disabled={busy} value={config.llm && config.providers.some((p) => config.llm!.startsWith(p.name)) ? config.llm.split(":")[0] : config.llm ?? ""}
               onChange={(e) => choose(e.target.value)}>
         <option value="" disabled>Choose…</option>
+        {/* An active model that is not one of the listed providers is still shown, so the menu never lies. */}
+        {config.llm && !config.providers.some((p) => config.llm!.startsWith(p.name)) && (
+          <option value={config.llm}>{config.llm} (active)</option>
+        )}
         {config.providers.map((p) => (
           <option key={p.name} value={p.name}>
             {p.name === "openai" ? "OpenAI" : "Groq"} · {p.model}{p.configured ? "" : " (no key)"}

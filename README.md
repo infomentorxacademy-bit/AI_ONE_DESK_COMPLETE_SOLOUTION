@@ -56,6 +56,8 @@ for a refund, an approval card appears (also listed in the **Approvals** tab). P
 (Meera/Dev = lead, Kiran = finance) and Approve / Reject / Edit amount / Cancel. **Incidents** runs the outage
 detector. **Audit log** shows who approved what. Frontend checks: `npm test` (17 tests) and `npm run build`.
 
+A screen-by-screen tour with screenshots and a 5-minute demo script is in [`docs/UI_GUIDE.md`](docs/UI_GUIDE.md).
+
 **This demo web app has no login.** Anyone who can open it can act as any approver, and the "Reset demo data" button
 (only shown when `OPSDESK_ENABLE_RESET=1`) wipes the database. Run it on localhost only. A real deployment needs
 authentication, with the approver identity taken from the login instead of the "Acting as" menu.
