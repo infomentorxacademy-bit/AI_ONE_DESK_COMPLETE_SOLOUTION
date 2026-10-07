@@ -23,6 +23,20 @@
 * `agent/` talks to data ONLY through MCP tools (so least-privilege and masking are enforced server-side). The few
   `common` imports it has are pure functions (rules, clock, templates), never database access.
 
+## 1b. Web layer (optional)
+
+```
+ React + Vite UI (frontend/)  ── HTTP /api ──►  FastAPI (app/api/)  ──►  the same agent graphs + MCP tools
+   components, views, hooks                      routers: config, tickets,       (no logic duplicated)
+   api/client.ts is the only fetch()             approvals, incidents, admin
+```
+
+* The API reads data through the MCP tools using a restricted tool belt that does **not** include `issue_refund` or
+  `propose_rollback`: money moves only through the agent graph.
+* A paused approval is stored in memory with its `thread_id`; `POST /api/approvals/{thread_id}` resumes the same graph thread.
+* API keys never travel through the API or the browser; they are read from `app/.env` on the server.
+* No authentication in this demo (see README).
+
 ## 2. Who owns what (corporate view)
 
 | Component | Real-world owner | Why it is separate |

@@ -8,3 +8,7 @@ pytest-asyncio
 # Optional real-LLM backends (OpenAI and Groq both use the `openai` SDK).
 openai>=1.40
 python-dotenv>=1.0
+# Web API (FastAPI backend for the React UI).
+fastapi>=0.115
+uvicorn[standard]>=0.30
+httpx>=0.27

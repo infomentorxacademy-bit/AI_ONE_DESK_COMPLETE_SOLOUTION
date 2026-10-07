@@ -20,7 +20,7 @@ cd app
 bash setup.sh                 # creates .venv, installs pinned libraries, builds opsdesk.db, creates .env
 # edit app/.env: set LLM_PROVIDER=groq (or openai) and the matching API key
 source .venv/bin/activate
-pytest -q                     # 132 tests; offline, no key needed (they use a test-only stand-in model)
+pytest -q                     # 147 tests; offline, no key needed (they use a test-only stand-in model)
 python run_queue.py           # the full demo; if no LLM is chosen it ASKS you: 1) openai 2) groq
 ```
 
@@ -35,6 +35,30 @@ Other commands (all from `app/`):
 | `python run_queue.py` | No flag and no `LLM_PROVIDER`: you are asked which LLM to use |
 | `python spike/spike_client.py` / `spike_interrupt.py` | Two tiny proofs: a graph node calls an MCP tool; a graph pauses and resumes |
 | `python -m servers.orders_server` | Run one MCP server on its own (also `knowledge_server`, `ops_server`) |
+
+## 1b. Web app: FastAPI backend + React (Vite) UI
+
+The command-line demo above is all the requirements document asks for. The web app is an **optional extra layer**
+on top of the same agent (no business logic was duplicated):
+
+```bash
+# terminal 1 - backend (from app/, with the venv active and your key in app/.env)
+uvicorn api.main:app --port 8000          # API docs: http://localhost:8000/docs
+
+# terminal 2 - frontend (needs Node 20+)
+cd frontend
+npm install
+npm run dev                               # open http://localhost:5173
+```
+
+In the UI: choose the LLM (OpenAI or Groq) in the top bar → open a ticket → **Run agent** → when the agent pauses
+for a refund, an approval card appears (also listed in the **Approvals** tab). Pick who you are in **Acting as**
+(Meera/Dev = lead, Kiran = finance) and Approve / Reject / Edit amount / Cancel. **Incidents** runs the outage
+detector. **Audit log** shows who approved what. Frontend checks: `npm test` (17 tests) and `npm run build`.
+
+**This demo web app has no login.** Anyone who can open it can act as any approver, and the "Reset demo data" button
+(only shown when `OPSDESK_ENABLE_RESET=1`) wipes the database. Run it on localhost only. A real deployment needs
+authentication, with the approver identity taken from the login instead of the "Acting as" menu.
 
 ## 2. Choosing the LLM (OpenAI or Groq)
 
@@ -85,10 +109,12 @@ AI_ONE_DESK_COMPLETE_SOLOUTION/
     │   ├── nodes/ticket/          ONE FILE PER NODE of Graph A (11 files)
     │   ├── nodes/incident/        ONE FILE PER NODE of Graph B (6 files)
     │   └── graph_ticket.py graph_incident.py   only wiring: which node runs next
-    ├── run_queue.py               LAYER 4  demo runner (orchestration only)
+    ├── api/                       LAYER 4  FastAPI backend for the web UI (main, state, schemas, routers/)
+    ├── run_queue.py               LAYER 4  command-line demo runner (orchestration only)
     ├── tests/                     132 tests: db, rules, servers, scenarios, llm, architecture
     ├── spike/                     tiny working examples of the key techniques
     └── schema.sql seed_db.py setup.sh setup.bat requirements.txt .env.example pytest.ini
+└── frontend/                      React + TypeScript + Vite UI (src/api, components, views, hooks, test)
 ```
 
 Rule of thumb for reviewers: **every Python file starts with a docstring saying WHAT it is, WHY it exists and
@@ -131,8 +157,10 @@ that exact role, so a forged role cannot unlock a refund.
 | `test_servers.py` | 37 | every tool, resource, template and prompt; PII masking; the fraud-rules trap |
 | `test_scenarios.py` | 25 | scenarios S1-S24 end to end (real graphs + real MCP servers over stdio) |
 | `test_llm.py` | 28 | provider choice (no default), OpenAI/Groq backends with a stub client, guardrails, 2-calls-per-ticket |
+| `test_api.py` | 15 | FastAPI endpoints end to end: choose LLM, run tickets, two-step approval, forged role, incidents, reset guard |
 | `test_architecture.py` | 9 | least-privilege allow-lists, no secrets, docstrings + type hints, no raw PII |
-| **Total** | **132** | `pytest -q` → 132 passed (about 9 s) |
+| **Python total** | **147** | `pytest -q` → 147 passed (about 15 s) |
+| `frontend/` (Vitest) | 17 | approval card logic, API client errors, run panel, app shell (`npm test`) |
 
 ## 7. Honest status - read this
 
@@ -154,4 +182,8 @@ that exact role, so a forged role cannot unlock a refund.
 * **Windows (`setup.bat`) is untested**; Linux with Python 3.13 is what was run.
 * Not done (stretch goals ST-1, ST-2, ST-4, ST-5): HTTP transport, MCP elicitation, loading templates/prompts
   through the MCP client, and a scoring script. ST-3 (real LLM) is done as described above.
+* **The web app was tested end to end in a headless browser, but with the test stand-in model, not a real LLM** (no key
+  here). The browser drove: choose LLM → run T1 → T10 lead + finance approvals → outage detection → audit log, with no
+  console errors apart from a favicon 404 that I then fixed. The UI is functional, not a finished design; there is no
+  login, the production build (`npm run build`) is not served by FastAPI (use `npm run dev`, or host `dist/` yourself).
 * `InMemorySaver` means a paused approval is lost if the process exits; for production use a persistent checkpointer.

@@ -28,8 +28,9 @@ def _recommendation(state: TicketState, amount: int, needs: list[str]) -> str:
     """One plain sentence for the approver (computed from data, not written by the LLM)."""
     order = state["order"]
     days = (today() - date.fromisoformat(order["delivered_on"])).days
-    text = (f"Delivered {days} days ago, within the 30-day window; Rs {amount} is within the order price of "
-            f"Rs {order['price']}; needs {' and '.join(needs)}.")
+    roles = " and ".join(role.replace("_", " ") for role in needs)
+    text = (f"Delivered {days} days ago, within the 30-day window; Rs {amount:,} is within the order price of "
+            f"Rs {order['price']:,}; needs {roles}.")
     if "fraud_flag" in state.get("flags", []):
         text += " The account is flagged for extra review."
     return text + " Approve if the claim looks genuine."
