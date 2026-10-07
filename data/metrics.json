@@ -1,0 +1,96 @@
+{
+  "unit": "percent_error_rate",
+  "date": "2026-10-07",
+  "services": {
+    "payments-api": [
+      {
+        "time": "14:00",
+        "value": 0.4
+      },
+      {
+        "time": "14:05",
+        "value": 0.4
+      },
+      {
+        "time": "14:10",
+        "value": 22.8
+      },
+      {
+        "time": "14:15",
+        "value": 24.1
+      },
+      {
+        "time": "14:20",
+        "value": 23.5
+      },
+      {
+        "time": "14:25",
+        "value": 22.9
+      },
+      {
+        "time": "14:30",
+        "value": 23.0
+      }
+    ],
+    "orders-api": [
+      {
+        "time": "14:00",
+        "value": 0.3
+      },
+      {
+        "time": "14:05",
+        "value": 0.3
+      },
+      {
+        "time": "14:10",
+        "value": 0.4
+      },
+      {
+        "time": "14:15",
+        "value": 0.3
+      },
+      {
+        "time": "14:20",
+        "value": 0.5
+      },
+      {
+        "time": "14:25",
+        "value": 0.3
+      },
+      {
+        "time": "14:30",
+        "value": 0.4
+      }
+    ],
+    "search-api": [
+      {
+        "time": "14:00",
+        "value": 0.2
+      },
+      {
+        "time": "14:05",
+        "value": 0.3
+      },
+      {
+        "time": "14:10",
+        "value": 0.2
+      },
+      {
+        "time": "14:15",
+        "value": 0.2
+      },
+      {
+        "time": "14:20",
+        "value": 0.3
+      },
+      {
+        "time": "14:25",
+        "value": 0.2
+      },
+      {
+        "time": "14:30",
+        "value": 0.2
+      }
+    ]
+  }
+}

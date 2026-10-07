@@ -1,0 +1,10 @@
+# Pinned versions from the OpsDesk requirements document (section 5.5).
+fastmcp==3.4.8
+mcp==1.30.0
+langgraph==1.2.13
+langchain-mcp-adapters==0.3.2
+pytest==9.1.1
+pytest-asyncio
+# Optional real-LLM backends (OpenAI and Groq both use the `openai` SDK).
+openai>=1.40
+python-dotenv>=1.0

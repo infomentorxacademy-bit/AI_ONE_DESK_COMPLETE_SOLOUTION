@@ -1,0 +1,3 @@
+2026-10-07 14:00:10 INFO  orders-api healthy
+2026-10-07 14:12:31 WARN  orders-api payment status callback delayed
+2026-10-07 14:30:00 INFO  orders-api healthy

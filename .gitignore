@@ -1,0 +1,14 @@
+# secrets: API keys live ONLY in app/.env (never committed)
+.env
+*.env
+!.env.example
+
+# local database (rebuilt by seed_db.py) and Python/venv noise
+opsdesk.db
+*.db
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.idea/
+.vscode/
