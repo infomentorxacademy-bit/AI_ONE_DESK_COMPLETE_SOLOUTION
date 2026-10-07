@@ -51,6 +51,9 @@ export interface RunResult {
   card: ApprovalCardData | null;
 }
 
+/** A customer candidate from the search (email is already masked by the server). */
+export interface CustomerMatch { id: string; name: string; city: string; email_masked: string }
+
 export interface Approver { id: string; name: string; role: Role }
 
 export interface ProviderInfo { name: "openai" | "groq"; model: string; configured: boolean }

@@ -21,7 +21,7 @@ from agent.mcp_utils import ToolBelt, restrict             # agent/mcp_utils.py:
 
 # The ONLY tools the web API itself may call directly. It cannot call issue_refund or propose_rollback:
 # money moves only through the agent graph, never straight from an HTTP request (least privilege, G7).
-API_TOOLS = ("get_ticket", "list_tickets", "create_ticket", "get_audit_trail",
+API_TOOLS = ("get_ticket", "list_tickets", "create_ticket", "get_audit_trail", "find_customer",
              "list_incidents", "get_incident", "list_rollback_proposals")
 
 

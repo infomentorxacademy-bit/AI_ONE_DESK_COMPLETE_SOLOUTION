@@ -1,7 +1,7 @@
 // src/api/client.ts : the ONLY file that talks to the backend. Components never call fetch() themselves.
 // Every function returns typed data, or throws ApiError with a human-readable message that the UI can show.
 import type {
-  AppConfig, Approver, ApprovalAnswer, AuditEntry, Incident, IncidentRun, PendingApproval,
+  AppConfig, Approver, ApprovalAnswer, AuditEntry, CustomerMatch, Incident, IncidentRun, PendingApproval,
   RollbackProposal, RunResult, Ticket,
 } from "./types";
 
@@ -41,6 +41,8 @@ const post = <T>(path: string, data?: unknown) =>
 export const api = {
   config: () => request<AppConfig>("/config"),
   selectLlm: (provider: string) => post<{ llm: string }>("/llm", { provider }),
+  searchCustomers: (query: string) =>
+    request<{ items: CustomerMatch[] }>(`/customers/search?query=${encodeURIComponent(query)}`).then((r) => r.items),
   approvers: () => request<{ items: Approver[] }>("/approvers").then((r) => r.items),
 
   tickets: (status?: string) =>

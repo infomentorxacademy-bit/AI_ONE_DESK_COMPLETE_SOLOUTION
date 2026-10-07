@@ -20,7 +20,7 @@ cd app
 bash setup.sh                 # creates .venv, installs pinned libraries, builds opsdesk.db, creates .env
 # edit app/.env: set LLM_PROVIDER=groq (or openai) and the matching API key
 source .venv/bin/activate
-pytest -q                     # 147 tests; offline, no key needed (they use a test-only stand-in model)
+pytest -q                     # 149 tests; offline, no key needed (they use a test-only stand-in model)
 python run_queue.py           # the full demo; if no LLM is chosen it ASKS you: 1) openai 2) groq
 ```
 
@@ -54,7 +54,7 @@ npm run dev                               # open http://localhost:5173
 In the UI: choose the LLM (OpenAI or Groq) in the top bar → open a ticket → **Run agent** → when the agent pauses
 for a refund, an approval card appears (also listed in the **Approvals** tab). Pick who you are in **Acting as**
 (Meera/Dev = lead, Kiran = finance) and Approve / Reject / Edit amount / Cancel. **Incidents** runs the outage
-detector. **Audit log** shows who approved what. Frontend checks: `npm test` (17 tests) and `npm run build`.
+detector. **Audit log** shows who approved what. Frontend checks: `npm test` (18 tests) and `npm run build`.
 
 A screen-by-screen tour with screenshots and a 5-minute demo script is in [`docs/UI_GUIDE.md`](docs/UI_GUIDE.md).
 
@@ -159,10 +159,10 @@ that exact role, so a forged role cannot unlock a refund.
 | `test_servers.py` | 37 | every tool, resource, template and prompt; PII masking; the fraud-rules trap |
 | `test_scenarios.py` | 25 | scenarios S1-S24 end to end (real graphs + real MCP servers over stdio) |
 | `test_llm.py` | 28 | provider choice (no default), OpenAI/Groq backends with a stub client, guardrails, 2-calls-per-ticket |
-| `test_api.py` | 15 | FastAPI endpoints end to end: choose LLM, run tickets, two-step approval, forged role, incidents, reset guard |
+| `test_api.py` | 17 | FastAPI endpoints end to end: choose LLM, run tickets, two-step approval, forged role, customer search, incidents, reset guard |
 | `test_architecture.py` | 9 | least-privilege allow-lists, no secrets, docstrings + type hints, no raw PII |
-| **Python total** | **147** | `pytest -q` → 147 passed (about 15 s) |
-| `frontend/` (Vitest) | 17 | approval card logic, API client errors, run panel, app shell (`npm test`) |
+| **Python total** | **149** | `pytest -q` → 149 passed (about 15 s) |
+| `frontend/` (Vitest) | 18 | approval card logic, API client errors, run panel, app shell (`npm test`) |
 
 ## 7. Honest status - read this
 

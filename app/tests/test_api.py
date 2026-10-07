@@ -142,6 +142,25 @@ def test_incident_flow_over_http(client, with_llm):
     assert len(client.get("/api/rollbacks").json()["items"]) == 1
     assert client.post("/api/incident/run").json() == {"cluster_ids": []}                     # nothing new the 2nd time
 
+def test_customer_search_returns_masked_candidates_with_city(client):
+    items = client.get("/api/customers/search?query=Asha Rao").json()["items"]
+    assert sorted((c["id"], c["city"]) for c in items) == [("C001", "Delhi"), ("C011", "Mumbai")]
+    assert all("@" in c["email_masked"] and "***" in c["email_masked"] for c in items)
+    assert "phone" not in str(items) and "asha1@example.com" not in str(items)
+    assert client.get("/api/customers/search?query=rohan2@example.com").json()["items"][0]["id"] == "C002"
+    assert client.get("/api/customers/search?query=nobody-here").json()["items"] == []
+    assert client.get("/api/customers/search?query=a").status_code == 422        # too short
+
+
+def test_clarification_flow_end_to_end(client, with_llm):
+    first = client.post("/api/tickets/T11/run").json()
+    assert first["outcome"] == "needs_clarification"
+    candidates = client.get("/api/customers/search?query=Asha Rao").json()["items"]
+    mumbai = next(c for c in candidates if c["city"] == "Mumbai")
+    second = client.post(f"/api/tickets/T11/run?customer_id={mumbai['id']}").json()
+    assert second["outcome"] == "answered" and "2026-10-09" in second["reply"]
+
+
 def test_approvers_and_reset_guard(client, monkeypatch):
     assert [a["id"] for a in client.get("/api/approvers").json()["items"]] == ["F01", "L01", "L02"]
     monkeypatch.delenv("OPSDESK_ENABLE_RESET", raising=False)

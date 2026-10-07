@@ -62,10 +62,21 @@ T6 is **escalated** with the flag `possible_injection` and nothing is paid. T13 
 
 ### Step 5: Ambiguous customer (T11: "I am Asha Rao...")
 ![clarification](ui/06-clarification-needed.png)
-Two customers are called Asha Rao, so the agent **asks instead of guessing** (status *in progress*). Type the customer id
-(for example **C011**, the Mumbai one) and press **Run again with this customer**:
+Two customers are called Asha Rao, so the agent **asks instead of guessing** (status *in progress*). Its reply tells the
+customer to send their **city or email**.
+
+**Where does that information go?** This demo has no customer chat, so the customer's answer reaches *you*, the support
+agent (by email or phone in real life). You enter it **right here in the panel under the agent's reply**:
+
+1. The search box is pre-filled with the name from the ticket and already shows the candidates, each with **city** and a masked email.
+2. If the customer told you an email instead, type it in the box and press **Search** (exact email).
+3. Click **Use this customer** on the row whose city matches what the customer said (here: *Mumbai*).
+
+The agent runs again for that customer:
 
 ![clarified](ui/07-clarified-and-answered.png)
+
+Emails are masked by the server, so the UI never sees raw contact details.
 
 ### Step 6: A refund that needs a human (T3, Rs 24,000)
 ![approval card](ui/08-approval-card.png)
@@ -133,7 +144,7 @@ Type a ticket id (T10) to see the story: status changes, `refund_issued` naming 
 | T4 | already refunded | resolved, tells R9001 |
 | T5 | 47 days old | declined |
 | T6 | prompt injection | escalated |
-| T11 | ambiguous customer | in progress → enter C011 → resolved |
+| T11 | ambiguous customer | in progress → search "Asha Rao" → choose the Mumbai row → resolved |
 | T13 | other customer's data | declined |
 | B01–B12 | payment failures | handled by **Run outage detection** |
 

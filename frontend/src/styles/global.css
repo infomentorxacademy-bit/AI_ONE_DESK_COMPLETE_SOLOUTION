@@ -65,6 +65,7 @@ textarea { width: 100%; resize: vertical; } .form { display: grid; gap: 8px; }
 .ticket-text { font-size: 1.02rem; } .recommendation { font-weight: 500; }
 .detail__head { display: flex; gap: 10px; align-items: center; } .detail__head h2 { margin: 0; }
 .hint { color: var(--muted); font-size: .85rem; }
+.picker { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px; }
 
 /* badges + banners */
 .badge, .flag { display: inline-block; padding: 1px 9px; border-radius: 99px; font-size: .78rem; border: 1px solid var(--border); }

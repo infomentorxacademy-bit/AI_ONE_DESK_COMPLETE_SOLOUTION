@@ -1,11 +1,11 @@
 // components/RunPanel.tsx : shows the result of running the agent on a ticket (or of answering an approval).
 // Three possible states:
 //   * paused    -> shows the approval card right here so the user can answer immediately
-//   * needs_clarification -> offers a small form: "which customer is this? (e.g. C011)" and runs again
+//   * needs_clarification -> shows the customer search (CustomerPicker): pick the right account and the agent runs again
 //   * finished  -> shows kind, outcome, final status and the drafted customer reply
-import { useState } from "react";
 import type { ApprovalAnswer, Approver, RunResult } from "../api/types";
 import { ApprovalCard } from "./ApprovalCard";
+import { CustomerPicker } from "./CustomerPicker";
 import { StatusBadge } from "./StatusBadge";
 
 interface Props {
@@ -14,11 +14,15 @@ interface Props {
   busy: boolean;
   onAnswer: (answer: ApprovalAnswer) => void;
   onClarify: (customerId: string) => void;
+  ticketText: string;                   // used to pre-fill the customer search with the name in the ticket
 }
 
-export function RunPanel({ result, approver, busy, onAnswer, onClarify }: Props) {
-  const [customerId, setCustomerId] = useState("");
+/** "I am Asha Rao ..." -> "Asha Rao" (empty when the ticket gives no name). */
+function nameFromTicket(text: string): string {
+  return /\bI(?: am|'m)\s+([A-Z][a-z]+\s+[A-Z][a-z]+)/.exec(text)?.[1] ?? "";
+}
 
+export function RunPanel({ result, approver, busy, onAnswer, onClarify, ticketText }: Props) {
   if (result.state === "paused" && result.card) {
     return <ApprovalCard card={result.card} approver={approver} busy={busy} onAnswer={onAnswer} />;
   }
@@ -33,13 +37,7 @@ export function RunPanel({ result, approver, busy, onAnswer, onClarify }: Props)
       </dl>
       {result.reply && <blockquote className="reply">{result.reply}</blockquote>}
       {result.outcome === "needs_clarification" && (
-        <div className="edit">
-          <label htmlFor="clarify">Which customer is this? (customer id, e.g. C011)</label>
-          <input id="clarify" value={customerId} onChange={(e) => setCustomerId(e.target.value.trim().toUpperCase())} />
-          <button className="btn" disabled={busy || !/^C\d{3}$/.test(customerId)} onClick={() => onClarify(customerId)}>
-            Run again with this customer
-          </button>
-        </div>
+        <CustomerPicker suggestedQuery={nameFromTicket(ticketText)} busy={busy} onPick={onClarify} />
       )}
     </section>
   );

@@ -49,6 +49,7 @@ export function TicketDetail({ ticketId, approver, llmReady, refreshKey, onChang
       {agent.result && (
         <RunPanel result={agent.result} approver={approver} busy={agent.busy}
                   onAnswer={(a) => agent.answer(agent.result!.thread_id, a)}
+                  ticketText={ticket.text}
                   onClarify={(customerId) => agent.runTicket(ticket.id, customerId)} />
       )}
 

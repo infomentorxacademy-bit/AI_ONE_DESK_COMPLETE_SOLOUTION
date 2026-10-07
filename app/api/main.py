@@ -20,7 +20,7 @@ from agent.llm import get_llm                    # agent/llm/factory.py: builds 
 from agent.llm.base import LLMClient             # agent/llm/base.py: type of an LLM backend
 from agent.llm.real import LLMError              # agent/llm/real.py: raised when the model is unusable
 from agent.mcp_utils import open_tools           # agent/mcp_utils.py: starts the 3 MCP servers once
-from api.routers import admin, approvals, config, incidents, tickets   # one router file per area
+from api.routers import admin, approvals, config, customers, incidents, tickets   # one router file per area
 from api.state import AppState, NoLlmChosen      # api/state.py: shared objects
 from common.config import llm_provider           # common/config.py: LLM_PROVIDER from the environment
 
@@ -48,7 +48,7 @@ def create_app(llm_loader: Callable[[str], LLMClient] = get_llm) -> FastAPI:
     app.add_middleware(CORSMiddleware, allow_origins=[os.environ.get("OPSDESK_WEB_ORIGIN", "http://localhost:5173")],
                        allow_methods=["*"], allow_headers=["*"])
 
-    for module in (config, tickets, approvals, incidents, admin):
+    for module in (config, tickets, customers, approvals, incidents, admin):
         app.include_router(module.router, prefix="/api")
 
     # --- turn known problems into clear JSON errors instead of a 500 stack trace ---
