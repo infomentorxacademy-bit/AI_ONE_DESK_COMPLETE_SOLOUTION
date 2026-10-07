@@ -1,6 +1,6 @@
 """tests/test_scenarios.py : the 24 business scenarios (S1..S24), end to end through the real graphs.
 
-Every test uses: FakeLLM (offline) + the 3 real MCP servers over STDIO + the real SQLite database.
+Every test uses: tests/stub_llm.py (offline test double for the model) + the 3 real MCP servers over STDIO + the real SQLite database.
 S18 (internal rules unreachable) is covered in test_servers.py; S23 is the ticket_lifecycle test below.
 """
 from agent.runtime import interrupt_card, resume, run_ticket, start_ticket

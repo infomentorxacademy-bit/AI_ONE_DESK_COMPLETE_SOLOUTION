@@ -25,7 +25,7 @@ import seed_db                                                # noqa: E402  seed
 from agent.approvers import ScriptedApprover                  # noqa: E402  agent/approvers.py: auto-answers cards
 from agent.graph_incident import build_incident_graph         # noqa: E402  agent/graph_incident.py: Graph B
 from agent.graph_ticket import build_ticket_graph             # noqa: E402  agent/graph_ticket.py: Graph A
-from agent.llm.fake import FakeLLM                            # noqa: E402  agent/llm/fake.py: offline LLM
+from tests.stub_llm import StubLLM                             # noqa: E402  tests/stub_llm.py: TEST-ONLY model double
 from agent.mcp_utils import open_tools, unwrap                # noqa: E402  agent/mcp_utils.py: servers + result unwrap
 from agent.runtime import run_incident, run_ticket            # noqa: E402  agent/runtime.py: pause/resume loop
 from servers.knowledge_server import mcp as knowledge_mcp     # noqa: E402  the three server objects, used in-process
@@ -75,8 +75,8 @@ async def tools():
 
 
 @pytest.fixture
-def llm() -> FakeLLM:
-    return FakeLLM()
+def llm() -> StubLLM:
+    return StubLLM()
 
 
 @pytest.fixture

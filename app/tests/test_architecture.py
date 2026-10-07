@@ -86,3 +86,12 @@ async def test_agent_never_sees_raw_pii(tools):
     ]
     blob = " ".join(str(unwrap(o)) for o in outputs)
     assert "rohan2@example.com" not in blob and not re.search(r"\+91-\d{5}-\d{5}", blob)
+
+
+def test_product_code_has_no_fake_llm():
+    """The product must only use OpenAI/Groq: nothing outside tests/ may mention FakeLLM or the test stub."""
+    for folder in ("agent", "common", "servers"):
+        for path in (APP / folder).rglob("*.py"):
+            text = path.read_text(encoding="utf-8")
+            assert "FakeLLM" not in text and "stub_llm" not in text, path
+    assert not (APP / "agent" / "llm" / "fake.py").exists()

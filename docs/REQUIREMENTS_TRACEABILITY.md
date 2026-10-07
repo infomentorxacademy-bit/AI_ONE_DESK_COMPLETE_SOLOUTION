@@ -13,18 +13,18 @@ Every requirement of the OpsDesk document mapped to the code that implements it 
 | FR-25..26 | 3 prompts + reply templates resource | servers/*.py, common/prompts.py, common/templates.py | test_servers: *_prompt, reply_template_resource_and_prompt, all_seven_templates_are_short |
 | FR-27..41 | Graph A behaviours | agent/graph_ticket.py, agent/nodes/ticket/* | test_scenarios S1-S14, S19-S23 |
 | FR-42..48 | Graph B behaviours | agent/graph_incident.py, agent/nodes/incident/* | test_scenarios S15, S16, S17, S24 |
-| FR-49 | run_queue.py prints the section 16.2 summary | run_queue.py, agent/report.py | manual: docs/sample_run_output.txt |
+| FR-49 | run_queue.py prints the section 16.2 summary | run_queue.py, agent/report.py | manual: run `python run_queue.py` with an API key; compare with section 16.2 |
 | NFR-01 | no secrets in code | common/config.py, .gitignore, .env.example | test_architecture: no_secrets_in_source_files, env_file_is_git_ignored |
 | NFR-02..03 | internal files unreachable; allow-lists | common/stores/* | test_servers: internal_rules_are_unreachable, log_resource_is_allow_listed, unknown_service_is_refused |
 | NFR-04 | PII masked in the server | common/masking.py | test_servers: get_customer_masks_and_flags; test_architecture: agent_never_sees_raw_pii |
 | NFR-05 | writes idempotent or checked | servers/*, common/repositories/* | test_servers + scenario S20 |
 | NFR-06 | least privilege per node | agent/mcp_utils.py (ToolBelt), ALLOWED_TOOLS in every node | test_architecture: every_node_only_gets_the_tools..., tool_belt_blocks_other_tools |
-| NFR-07 | untrusted data | common/prompts.py, agent/llm/fake.py | scenarios S6, S17; test_llm: cannot_be_talked_out_of_an_injection |
+| NFR-07 | untrusted data | common/prompts.py, agent/llm/guardrails.py | scenarios S6, S17; test_llm: cannot_be_talked_out_of_an_injection |
 | NFR-08 | deterministic business decisions | common/rules.py | test_rules |
 | NFR-09 | errors returned, never crash | common/responses.py | scenario S21; test_servers *_errors |
 | NFR-10 | resume with same thread_id; cancel pays nothing | agent/runtime.py, approval_gate.py | scenarios S3, S19 |
-| NFR-11 | everything offline with FakeLLM | agent/llm/fake.py | pytest -q |
-| NFR-12 | queue under 30 s | run_queue.py | docs/sample_run_output.txt (about 4 s) |
+| NFR-11 | tests run offline without a key (the product itself needs OpenAI or Groq) | tests/stub_llm.py (test-only) | pytest -q |
+| NFR-12 | queue under 30 s | run_queue.py | measured about 4 s with the test stand-in; with a real LLM it depends on API latency |
 | NFR-13 | audit rows | common/db.py audit() | test_servers: blocked_and_issued_refunds_are_audited, ticket_lifecycle |
 | NFR-14 | type hints + docstrings, one file per server | all files | test_architecture: every_tool_has_a_docstring_and_type_hints |
 | NFR-15 | setup.sh works on a clean checkout | app/setup.sh | verified from a fresh clone (see README section 7) |

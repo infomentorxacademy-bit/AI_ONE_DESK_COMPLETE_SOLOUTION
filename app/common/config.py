@@ -40,15 +40,11 @@ FROZEN_NOW: datetime = datetime(2026, 10, 7, 14, 30, 0, tzinfo=IST)
 
 # --------------------------------------------------------------------------- LLM settings
 # LLM_PROVIDER decides which "brain" drafts replies. Allowed values:
-#   fake   -> built-in deterministic FakeLLM (default, free, offline)
 #   openai -> OpenAI API            (needs OPENAI_API_KEY)
 #   groq   -> Groq Cloud API        (needs GROQ_API_KEY)  NOTE: Groq (groq.com), NOT xAI "Grok"
-# For backward compatibility with the requirements document, USE_REAL_LLM=1 means "use openai".
+# There is no default: run_queue.py asks you if LLM_PROVIDER is not set.
 
 
 def llm_provider() -> str:
-    """Return the selected provider name: 'fake', 'openai' or 'groq'."""
-    provider = os.environ.get("LLM_PROVIDER", "").strip().lower()
-    if not provider:
-        provider = "openai" if os.environ.get("USE_REAL_LLM") == "1" else "fake"
-    return provider
+    """Return the selected provider name ('openai' or 'groq'), or '' if none was chosen yet."""
+    return os.environ.get("LLM_PROVIDER", "").strip().lower()

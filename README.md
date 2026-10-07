@@ -6,21 +6,22 @@ and notices when many tickets point to one outage.
 
 Built from `OpsDesk_Standard_Project_Requirements.docx`: **3 MCP servers (21 tools, 7 resources, 3 prompts)**,
 **1 pure-Python rule module**, **1 LangGraph agent = 2 graphs (11 + 6 nodes)**, SQLite (10 tables), human approval
-with `interrupt()` / resume, and a switchable LLM: **offline FakeLLM (default), OpenAI, or Groq**.
+with `interrupt()` / resume, and a choice of LLM: **OpenAI or Groq** (you pick one; there is no offline fake in the product).
 
 > **Groq vs Grok.** The Groq option uses **Groq Cloud (groq.com)** through its OpenAI-compatible API.
 > It is *not* xAI's "Grok".
 
 ---------------------------------------------------------------------------------------------------
 
-## 1. Quick start (about 2 minutes, no API key needed)
+## 1. Quick start (about 2 minutes; the demo needs an OpenAI or Groq API key)
 
 ```bash
 cd app
 bash setup.sh                 # creates .venv, installs pinned libraries, builds opsdesk.db, creates .env
+# edit app/.env: set LLM_PROVIDER=groq (or openai) and the matching API key
 source .venv/bin/activate
-pytest -q                     # 129 tests, all offline
-python run_queue.py           # the full demo: 14 tickets + outage detector (~4 seconds)
+pytest -q                     # 132 tests; offline, no key needed (they use a test-only stand-in model)
+python run_queue.py           # the full demo; if no LLM is chosen it ASKS you: 1) openai 2) groq
 ```
 
 Other commands (all from `app/`):
@@ -30,29 +31,30 @@ Other commands (all from `app/`):
 | `python seed_db.py` | Reset the database to the original data (run before a demo) |
 | `python run_queue.py --interactive` | YOU answer the approval cards in the terminal (approve / reject / edit_amount / cancel) |
 | `python run_queue.py --llm openai` | Use OpenAI (needs `OPENAI_API_KEY`) |
-| `python run_queue.py --llm groq` | Use Groq Cloud (needs `GROQ_API_KEY`) |
+| `python run_queue.py --llm groq` | Use Groq Cloud with `openai/gpt-oss-20b` (needs `GROQ_API_KEY`) |
+| `python run_queue.py` | No flag and no `LLM_PROVIDER`: you are asked which LLM to use |
 | `python spike/spike_client.py` / `spike_interrupt.py` | Two tiny proofs: a graph node calls an MCP tool; a graph pauses and resumes |
 | `python -m servers.orders_server` | Run one MCP server on its own (also `knowledge_server`, `ops_server`) |
 
-A real captured run is in [`docs/sample_run_output.txt`](docs/sample_run_output.txt).
+## 2. Choosing the LLM (OpenAI or Groq)
 
-## 2. Choosing the LLM (OpenAI, Groq, or none)
-
-Copy `app/.env.example` to `app/.env` (git-ignored) and set one provider:
+`setup.sh` creates `app/.env` (git-ignored). Set one provider there (or pass `--llm`; if neither is set you are asked):
 
 ```ini
-LLM_PROVIDER=fake      # default: offline, free, deterministic
 LLM_PROVIDER=openai    # + OPENAI_API_KEY=...   (optional OPENAI_MODEL, default gpt-4o-mini)
 LLM_PROVIDER=groq      # + GROQ_API_KEY=...     (optional GROQ_MODEL, default openai/gpt-oss-20b)
 ```
 
-`--llm fake|openai|groq` on `run_queue.py` overrides the file. Both real providers share ONE class
+The models are defined in ONE place: the `PROVIDERS` table in `app/agent/llm/real.py`.
+```
+
+`--llm openai|groq` on `run_queue.py` overrides the file. Both real providers share ONE class
 (`app/agent/llm/real.py`) because Groq speaks the OpenAI protocol (only the base URL and key differ).
 
 **The model never makes business decisions.** It only (a) labels the ticket and (b) rephrases a template with safe
 facts. Amount limits, approvers and dates are plain Python (`common/rules.py`). Guardrails around the model:
 injection detection by code always wins over the model; a reply that mentions fraud, contains a phone number or
-loses an id falls back to the plain template; any API error falls back to the offline FakeLLM; at most 2 LLM calls
+loses an id falls back to the plain template; if the model's classification is unusable the run stops with a clear `LLMError` instead of guessing; at most 2 LLM calls
 per ticket, with token usage printed at the end.
 
 ## 3. Project structure (corporate layering)
@@ -63,7 +65,6 @@ AI_ONE_DESK_COMPLETE_SOLOUTION/
 ├── docs/
 │   ├── ARCHITECTURE.md            <- layers, data flow, graphs, security model
 │   ├── REQUIREMENTS_TRACEABILITY.md <- every FR / NFR / scenario -> file + test
-│   └── sample_run_output.txt      <- a real run of run_queue.py
 ├── data/                          <- the company's raw material (never edited by code)
 │   ├── standard_data.json  metrics.json  logs/  policies/  runbooks/
 │   └── internal/fraud-rules.md    <- deliberate TRAP: no server can reach it
@@ -80,12 +81,12 @@ AI_ONE_DESK_COMPLETE_SOLOUTION/
     │   └── ops_server.py          9 tools, 1 resource, 1 template, 1 prompt (platform team)
     ├── agent/                     LAYER 3  the LangGraph agent (MCP client)
     │   ├── state.py mcp_utils.py runtime.py approvers.py report.py reply_facts.py text_utils.py
-    │   ├── llm/                   base.py fake.py real.py (OpenAI + Groq) factory.py
+    │   ├── llm/                   base.py real.py (OpenAI + Groq, PROVIDERS table) guardrails.py factory.py
     │   ├── nodes/ticket/          ONE FILE PER NODE of Graph A (11 files)
     │   ├── nodes/incident/        ONE FILE PER NODE of Graph B (6 files)
     │   └── graph_ticket.py graph_incident.py   only wiring: which node runs next
     ├── run_queue.py               LAYER 4  demo runner (orchestration only)
-    ├── tests/                     129 tests: db, rules, servers, scenarios, llm, architecture
+    ├── tests/                     132 tests: db, rules, servers, scenarios, llm, architecture
     ├── spike/                     tiny working examples of the key techniques
     └── schema.sql seed_db.py setup.sh setup.bat requirements.txt .env.example pytest.ini
 ```
@@ -129,9 +130,9 @@ that exact role, so a forged role cannot unlock a refund.
 | `test_rules.py` | 30 | every rule and boundary (2000/2001, 25000/25001, day 30/31, order of checks) |
 | `test_servers.py` | 37 | every tool, resource, template and prompt; PII masking; the fraud-rules trap |
 | `test_scenarios.py` | 25 | scenarios S1-S24 end to end (real graphs + real MCP servers over stdio) |
-| `test_llm.py` | 26 | FakeLLM, OpenAI/Groq backends with a stub client, guardrails, fallbacks, 2-calls-per-ticket |
-| `test_architecture.py` | 8 | least-privilege allow-lists, no secrets, docstrings + type hints, no raw PII |
-| **Total** | **129** | `pytest -q` → 129 passed (about 9 s) |
+| `test_llm.py` | 28 | provider choice (no default), OpenAI/Groq backends with a stub client, guardrails, 2-calls-per-ticket |
+| `test_architecture.py` | 9 | least-privilege allow-lists, no secrets, docstrings + type hints, no raw PII |
+| **Total** | **132** | `pytest -q` → 132 passed (about 9 s) |
 
 ## 7. Honest status - read this
 
@@ -140,8 +141,13 @@ that exact role, so a forged role cannot unlock a refund.
   states (row counts, order prices, dates, spike 0.4 → 22.8 at 14:10, D-301 at 14:05, INC-500, refund ids) are
   reproduced exactly; filler values (names of other customers, item names, log wording) are mine.
 * **The tests are mine, not the course author's 88 hidden tests.** They cover every FR, NFR and scenario in the
-  document (see the traceability table), and `run_queue.py` reproduces the document's section 16.2 and 16.3 tables.
-  My count is 129, not 88, because I split the LLM and architecture checks out and added extra edge cases.
+  document (see the traceability table), and with the test stand-in model `run_queue.py`'s graphs reproduce the document's section 16.2 and 16.3 tables (verified before the fake LLM was removed).
+  My count is 132, not 88, because I split the LLM and architecture checks out and added extra edge cases.
+* **The product no longer has an offline LLM, and the full demo has NOT been run with a real model.** Without a key I could
+  not run `run_queue.py` end to end after removing the fake. The graphs, rules and servers are unchanged and tested with the
+  test-only stand-in (`app/tests/stub_llm.py`), but a real model may classify some tickets differently (a wrong label can
+  change an outcome; the rules, approvals and injection check still apply). Please run it once with your key and tell me
+  what you see.
 * **OpenAI and Groq were NOT exercised against the live APIs** (no keys in this environment). The code path is tested
   with a stub client, including the base URL/model/key selection and every fallback, but a first real run may need
   a model-name tweak in `.env`.

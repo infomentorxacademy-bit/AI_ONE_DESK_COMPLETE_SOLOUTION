@@ -86,7 +86,7 @@ Checked in this exact order; the first match wins:
 ## 6. Security model
 
 * **Untrusted inputs:** ticket text, log lines, tool output. They are labelled as data in prompts and tool results,
-  and instruction-like text is detected by code (`agent/llm/fake.py`) even when a real model is used.
+  and instruction-like text is detected by code (`agent/llm/guardrails.py`) even when a real model is used.
 * **PII:** masked inside the server (`common/masking.py`); the agent never receives raw email/phone.
 * **Internal files:** `data/internal/` is outside every allow-list; there is no code path from user text to a file path.
 * **Secrets:** read only from environment / `.env`; MCP server subprocesses receive only `OPSDESK_*` variables, never an LLM key.
@@ -96,5 +96,7 @@ Checked in this exact order; the first match wins:
 ## 7. LLM seam
 
 `agent/llm/base.py` defines two methods: `classify(ticket)` and `draft(template, facts)`.
-`FakeLLM` (default) is deterministic. `RealLLM` serves OpenAI and Groq (OpenAI-compatible endpoint) with validation,
-guardrails and fallbacks; `agent/llm/factory.py` picks one from `LLM_PROVIDER` or `--llm`.
+`RealLLM` (`agent/llm/real.py`) serves OpenAI and Groq (OpenAI-compatible endpoint); the `PROVIDERS` table there is the
+one place models are defined. `agent/llm/factory.py` picks one from `LLM_PROVIDER` or `--llm`, and `run_queue.py` asks you
+if neither is set. There is no offline fake in the product: tests use `app/tests/stub_llm.py`, a test-only double.
+Guardrails in plain code (`guardrails.py`) flag injections even if the model misses them.

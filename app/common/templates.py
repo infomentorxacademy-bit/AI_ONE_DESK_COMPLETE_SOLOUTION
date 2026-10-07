@@ -4,10 +4,10 @@ WHAT   RESOURCE_TEMPLATES   the 7 templates served by the orders-server as reply
        INTERNAL_TEMPLATES   extra wording the agent needs (duplicate refund, policy answer...)
        render()             fills {placeholders}; a missing placeholder becomes "" instead of crashing
 WHY    ONE copy of the wording, shared by the MCP server (so humans/other apps can read it) and by
-       agent/llm/fake.py (so the offline demo drafts the same text). No wording is duplicated.
+       agent/llm/real.py (plain-template fallback). No wording is duplicated.
 SAFETY None of these templates can contain a fraud flag, a phone number or another customer's data,
        because they only receive the safe `facts` built in agent/reply_facts.py.
-USED BY servers/orders_server.py, agent/llm/fake.py, agent/llm/real.py
+USED BY servers/orders_server.py, agent/llm/real.py, agent/reply_facts.py
 """
 from __future__ import annotations
 
@@ -82,7 +82,7 @@ class _SafeDict(dict):
 
 
 def all_templates() -> dict[str, str]:
-    """Every template (served + internal) in one dict; used by the FakeLLM."""
+    """Every template (served + internal) in one dict; used by RealLLM."""
     return {**RESOURCE_TEMPLATES, **INTERNAL_TEMPLATES}
 
 

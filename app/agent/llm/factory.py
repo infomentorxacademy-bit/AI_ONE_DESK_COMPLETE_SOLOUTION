@@ -1,22 +1,20 @@
-"""agent/llm/factory.py : choose the LLM backend from configuration (the single switch).
+"""agent/llm/factory.py : choose which LLM to use. There is no default and no offline fake: you must pick one.
 
-HOW    export LLM_PROVIDER=fake     (default: offline, free)
-       export LLM_PROVIDER=openai   and OPENAI_API_KEY=...
+HOW    export LLM_PROVIDER=openai   and OPENAI_API_KEY=...
        export LLM_PROVIDER=groq     and GROQ_API_KEY=...        (Groq Cloud, not xAI Grok)
-       (legacy: USE_REAL_LLM=1 means openai)   run_queue.py also accepts  --llm fake|openai|groq
+       or pass  python run_queue.py --llm openai|groq   (run_queue also asks you if neither is given)
 USED BY run_queue.py, tests
 """
 from __future__ import annotations
 
 from agent.llm.base import LLMClient          # agent/llm/base.py: the interface type returned
-from agent.llm.fake import FakeLLM            # agent/llm/fake.py: offline backend
-from agent.llm.real import RealLLM            # agent/llm/real.py: OpenAI / Groq backend
-from common.config import llm_provider        # common/config.py: reads LLM_PROVIDER / USE_REAL_LLM
+from agent.llm.real import PROVIDERS, RealLLM # agent/llm/real.py: the OpenAI / Groq backend + provider table
+from common.config import llm_provider        # common/config.py: reads LLM_PROVIDER from the environment
 
 
 def get_llm(provider: str | None = None) -> LLMClient:
-    """Return the LLM backend. `provider` overrides the environment (used by the --llm flag)."""
+    """Return the LLM backend for `provider` (or LLM_PROVIDER). Raises a clear error if none was chosen."""
     choice = (provider or llm_provider()).lower()
-    if choice == "fake":
-        return FakeLLM()
+    if not choice:
+        raise RuntimeError(f"No LLM chosen. Set LLM_PROVIDER in app/.env or use --llm. Options: {', '.join(PROVIDERS)}")
     return RealLLM(choice)                    # raises a clear error for unknown names or a missing API key
